@@ -2,10 +2,9 @@
 let incorrectNumber = "Provided number is invalid."
 
 let getRandomNotInList list generator =
-    let mutable result = generator ()
-    while List.contains result list do
-        result <- generator ()
-    result
+    Seq.initInfinite (fun _ -> generator ())
+    |> Seq.takeWhile (fun x -> List.exists (fun l -> l = x) list)
+    |> Seq.head
 
 let rec uniqueRandom itemGenerator (current : list<'a>) number =
     match current.Length with
