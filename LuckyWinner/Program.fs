@@ -3,7 +3,7 @@ let incorrectNumber = "Provided number is invalid."
 
 let getRandomNotInList list generator =
     Seq.initInfinite (fun _ -> generator ())
-    |> Seq.takeWhile (fun x -> List.exists (fun l -> l = x) list)
+    |> Seq.skipWhile (fun x -> List.exists (fun l -> l = x) list)
     |> Seq.head
 
 let rec uniqueRandom itemGenerator (current : list<'a>) number =
