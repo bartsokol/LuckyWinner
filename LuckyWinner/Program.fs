@@ -15,33 +15,34 @@ let getRandomRowNumbers lineCount amount =
     let r = System.Random()
     uniqueRandom (fun () -> r.Next(0, lineCount)) [] amount
 
-let displayWinners items =
-    Seq.iter (printfn "* %s") items
-
 let proceed filename number =
     let lines = System.IO.File.ReadAllLines(filename)
     printfn "Selecting %A lucky winners out of %A" number lines.Length
     match lines.Length with
     | 0 -> printfn "File is empty."
-    | count when count <= number -> printfn "Not enough data. Expected more than %A lines, got %A lines." number count
-    | count -> (getRandomRowNumbers count number) |> Seq.map (fun ind -> lines.[ind]) |> displayWinners
-    ()
+    | count when count <= number -> printfn "Not enough data. Expected more than %i lines, got %i lines." number count
+    | count -> (getRandomRowNumbers count number)
+               |> Seq.map (fun ind -> lines.[ind])
+               |> Seq.iter (printfn "* %s")
 
-let parse number =
+let (|FileExists|_|) filename =
+    match System.IO.File.Exists(filename) with
+    | true -> Some filename
+    | false -> fileNotFound |> (printfn "%s"); None
+
+let (|Number|_|) number =
     match System.Int32.TryParse(number) with
     | (true,int) -> Some(int)
-    | _ -> None
+    | _ -> incorrectNumber |> (printfn "%s"); None
 
-let verify filename number =
-    match (System.IO.File.Exists(filename), number) with
-    | (true, Some num) -> proceed filename num
-    | (true, None) -> incorrectNumber |> (printfn "%s")
-    | (false, Some _) -> fileNotFound |> (printfn "%s")
-    | (false, None) -> (fileNotFound + "\n" + incorrectNumber) |> (printfn "%s")
+let (|FileAndCount|_|) args =
+    match args with
+    | [|FileExists filename; Number number|] -> Some (filename, number)
+    | _ -> None
 
 [<EntryPoint>]
 let main argv = 
     match argv with
-    | [|filename; number|] -> verify filename (parse number)
+    | FileAndCount (filename, number) -> proceed filename number
     | _ -> printfn "Usage: LuckyWiner fileName numberOfLuckyWinners"
     0
