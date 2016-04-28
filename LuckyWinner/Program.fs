@@ -1,7 +1,4 @@
-﻿let fileNotFound = "Provided file does not exist."
-let incorrectNumber = "Provided number is invalid."
-
-let getRandomNotInList list generator =
+﻿let getRandomNotInList list generator =
     Seq.initInfinite (fun _ -> generator ())
     |> Seq.skipWhile (fun x -> List.exists (fun l -> l = x) list)
     |> Seq.head
@@ -25,19 +22,19 @@ let proceed filename number =
                |> Seq.map (fun ind -> lines.[ind])
                |> Seq.iter (printfn "* %s")
 
-let (|FileExists|_|) filename =
+let (|ExistingFile|_|) filename =
     match System.IO.File.Exists(filename) with
     | true -> Some filename
-    | false -> fileNotFound |> (printfn "%s"); None
+    | false -> printfn "%s" "Provided file does not exist."; None
 
 let (|Number|_|) number =
     match System.Int32.TryParse(number) with
     | (true,int) -> Some(int)
-    | _ -> incorrectNumber |> (printfn "%s"); None
+    | _ -> printfn "%s" "Provided number is invalid."; None
 
 let (|FileAndCount|_|) args =
     match args with
-    | [|FileExists filename; Number number|] -> Some (filename, number)
+    | [|ExistingFile filename; Number number|] -> Some (filename, number)
     | _ -> None
 
 [<EntryPoint>]
